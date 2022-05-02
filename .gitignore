@@ -1,2 +1,5 @@
-### mongoDB password
+### modules
+node_modules
+
+### mongoDB key
 mongoPW.js
