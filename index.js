@@ -3,7 +3,6 @@ const app = express() // app
 const port = 4000
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-
 const config = require('./config/key');
 
 const { auth } = require("./middleware/auth");
@@ -81,7 +80,7 @@ app.post('/api/users/login', (req, res) => {
 
 })
 
-// auth part
+// auth route
 app.get('/api/users/auth', auth, (req, res) => {
     // auth = middleware, 여기까지 미들웨어를 통과했다는 말은 Authentication = True!
     res.status(200).json({
@@ -96,7 +95,18 @@ app.get('/api/users/auth', auth, (req, res) => {
     })
 })
 
+// logout route
+app.get('/api/users/logout', auth, (req, res) => {
+    // mongoose method
+    User.findByIdAndRemove({_id: req.user._id}, 
+        {token: ""}, (err, user) => {
+            if(err) return res.json({success: false, err});
 
+            return res.status(200).send({
+                success: true
+            })
+        })
+})
 
 
 

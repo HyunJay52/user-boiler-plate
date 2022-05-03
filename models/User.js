@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10; // salt를 이용해서 비밀번호 암호화 > salt가 몇 글자인지 = saltRounds
 const jwt = require('jsonwebtoken');
  
+// DB Schema
 const userSchema = mongoose.Schema({
     name: {
         type: String,
@@ -10,7 +11,7 @@ const userSchema = mongoose.Schema({
     },
     email: {
         type: String,
-        trim: true,
+        trim: true, // remove space
         unique: 1
     },
     password: {
@@ -39,10 +40,11 @@ userSchema.pre('save', function (next) {
     var user = this; // = userSchema
 
     if (user.isModified('password')) { // 비밀번호 수정 시
-        //비밀번호를 암호화
+        //비밀번호를 암호화 www.npmjs.com/package/bcrypt
         bcrypt.genSalt(saltRounds, function (err, salt) {
             if (err) return next(err);
 
+            // salt 생성 성공 > hash(plain passwrod, salt, callback(err, hased pw))
             bcrypt.hash(user.password, salt, function (err, hash) {
                 if (err) return next(err);
 
@@ -80,7 +82,7 @@ userSchema.methods.generateToken = function(cb) {
 }
 
 // auth
-userSchema.methods.findByToken = function(token, cb) {
+userSchema.statics.findByToken = function(token, cb) {
     var user = this;
 
     // 토큰 디코드 
@@ -97,6 +99,7 @@ userSchema.methods.findByToken = function(token, cb) {
 
 
 }
+
 
 // module is covering schema
 const User = mongoose.model('User', userSchema)
