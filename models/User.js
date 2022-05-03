@@ -1,7 +1,10 @@
-const mongoose = require('mongoose')
-
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const saltRounds = 10; // salt를 이용해서 비밀번호 암호화 > salt가 몇 글자인지 = saltRounds
+const jwt = require('jsonwebtoken');
+ 
 const userSchema = mongoose.Schema({
-    name : {
+    name: {
         type: String,
         maxlength: 50
     },
@@ -31,7 +34,55 @@ const userSchema = mongoose.Schema({
     }
 })
 
+// mongoose method > before saving in the register route, callback 'bycryt'
+userSchema.pre('save', function (next) {
+    var user = this; // = userSchema
+
+    if (user.isModified('password')) { // 비밀번호 수정 시
+        //비밀번호를 암호화
+        bcrypt.genSalt(saltRounds, function (err, salt) {
+            if (err) return next(err);
+
+            bcrypt.hash(user.password, salt, function (err, hash) {
+                if (err) return next(err);
+
+                user.password = hash; // user password를 hashed password로 교체
+                next();
+            })
+        })
+    } else { // 다른거 수정 시
+        next();
+    }
+});
+
+// 비밀번호 일치 확인
+userSchema.methods.comparePassword = function(plainPassword, callback) {
+    //plainPassword : 1234567 = hashed password 
+    bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
+        if(err) return callback(err);
+        // =
+        callback(null, isMatch);
+    })
+}
+// 비밀번호가 일치한다면, token 생성
+userSchema.methods.generateToken = function(cb) {
+    var user = this; //es5
+
+    /// jwt, jsonwebtoken을 이용해서, token 생성하기
+    var token = jwt.sign(user._id.toHexString(), 'secretToken') 
+    //  user._id( = mongoDB _id) + secretToken -> 'secretToken' => user._id 찾을 수 있음
+
+    user.token = token;
+    user.save(function(err, user) {
+        if(err) return cb(err);
+        cb(null, user);
+    })
+}
+
+
 // module is covering schema
 const User = mongoose.model('User', userSchema)
 // to use as a global
-module.exports = { User }
+module.exports = {
+    User
+}

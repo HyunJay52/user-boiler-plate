@@ -2,6 +2,7 @@ const express = require('express') // express module
 const app = express() // app
 const port = 4000
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 
 const config = require('./config/key');
 
@@ -13,6 +14,8 @@ const mongoose = require('mongoose')
 app.use(bodyParser.urlencoded({extended: true}));
 // application/json
 app.use(bodyParser.json());
+// cookie parser
+app.use(cookieParser());
 
 mongoose.connect(config.mongoURL, {
         useNewUrlParser: true,
@@ -33,13 +36,53 @@ app.post('/register', (req, res)=>{
     const user = new User(req.body)
 
     // mongoDB method
-    user.save((err, doc) => {
+    user.save((err, userInfo) => {
         if(err) return res.json({ success : false, err})
         return res.status(200).json({
             success : true
         })
     })
 })
+
+app.post('/login', (req, res) => {
+    // 1. 요청된 이메일을 데이터 베이스에서 있는지 확인
+    User.findOne({ email: req.body.email }, (err, user) => {
+        if(!user) {
+            return res.json({
+                loginSuccess: false,
+                message: "제공된 이메일에 해당되는 유저가 없습니다."
+            })
+        }
+
+    // 2. 요청된 이메일이 있다면, 비밀번호가 동일한지 확인
+        user.comparePassword(req.body.password, (err,isMacth) => {
+            if(!isMacth) {
+                return res.json({
+                    loginSuccess: false,
+                    message: "비밀번호가 틀렸습니다."
+                })
+            }
+
+    // 3. 비밀번호까지 같아면 해당 유저를 위한 token 생성         
+            user.generateToken((err, user) => {
+                if(err) return res.status(400).send(err);
+
+                // token을 저장, 어디에? 쿠키, 로컬스토리지, 세션 등에 저장
+                res.cookie("x_auth", user.token)
+                .status(200)
+                .json( { loginSuccess: true, userId: user._id } )
+
+            })
+
+        })
+    
+    });
+
+})
+
+
+
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
