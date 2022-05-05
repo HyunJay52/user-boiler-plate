@@ -62,8 +62,8 @@ app.post('/api/users/login', (req, res) => {
                     loginSuccess: false,
                     message: "비밀번호가 틀렸습니다."
                 })
+        
             }
-
     // 3. 비밀번호까지 같아면 해당 유저를 위한 token 생성         
             user.generateToken((err, user) => {
                 if(err) return res.status(400).send(err);
