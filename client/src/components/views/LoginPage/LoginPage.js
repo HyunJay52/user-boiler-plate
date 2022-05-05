@@ -20,6 +20,8 @@ function LoginPage(props) {
         setPassword(event.currentTarget.value);
     }
 
+    const history = useNavigate();
+
     const onSubmithandler = (event) => {
         event.preventDefault();
 
@@ -31,7 +33,6 @@ function LoginPage(props) {
             password: Password
         }
 
-        let history = useNavigate();
         // redux dispatch를 이용해 action을 취함
         // 아래 request 처리 부분을 redux에서 실행함 -> user_action.js
         // axios.post('/api/users/login', body).then(response => {response.data});
@@ -40,7 +41,7 @@ function LoginPage(props) {
         .then(response => {
             //로그인 성공시 랜딩페이지로 이동
             if(response.payload.loginSuccess){
-                //props.first.history.push('/')
+                // props.first.history.push('/')
                 history('/')
             }else{
                 alert('Error')
