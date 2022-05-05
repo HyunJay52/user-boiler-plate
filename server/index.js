@@ -1,6 +1,5 @@
 const express = require('express') // express module
 const app = express() // app
-const port = 4000
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const config = require('./config/key');
@@ -8,7 +7,7 @@ const config = require('./config/key');
 const { auth } = require("./middleware/auth");
 const { User } = require("./models/User");
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 // application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true}));
@@ -25,10 +24,12 @@ mongoose.connect(config.mongoURL, {
     })
     .catch(err => console.log("error = ", err))
 
+// root
 app.get('/', (req, res) => { // root directory
     res.send('Hello World! welcome back!')
 })
 
+// register router
 app.post('/api/users/register', (req, res)=>{
     // 회원가입 시, 필요한 정보를 client에서 가져오면 DB에 넣어준다.
     
@@ -108,9 +109,12 @@ app.get('/api/users/logout', auth, (req, res) => {
         })
 })
 
+// front server conncetion
+app.get('/api/hello', (req, res) => {
+    res.send('hello from node server!');
+})
 
-
-
+const port = 4000
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })

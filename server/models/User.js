@@ -100,7 +100,6 @@ userSchema.statics.findByToken = function(token, cb) {
 
 }
 
-
 // module is covering schema
 const User = mongoose.model('User', userSchema)
 // to use as a global
