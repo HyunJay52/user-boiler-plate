@@ -28,7 +28,7 @@ function RegisterPage(props) {
         setConfirmPassword(event.currentTarget.value);
     }
 
-    let history = useNavigate();
+    const history = useNavigate();
     
     const onSubmithandler = (event) => {
         event.preventDefault();
